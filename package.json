@@ -1,0 +1,38 @@
+{
+  "name": "automata-api",
+  "version": "1.0.0",
+  "description": "API for automata project",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+    "test": "npm run lint && NODE_ENV=test ava --verbose test/**-test.js"
+  },
+  "standard": {
+    "parser": "babel-eslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hi-neron/Automata-api.git"
+  },
+  "keywords": [
+    "api",
+    "automata",
+    "grade",
+    "project"
+  ],
+  "author": "Neron",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hi-neron/Automata-api/issues"
+  },
+  "homepage": "https://github.com/hi-neron/Automata-api#readme",
+  "devDependencies": {
+    "ava": "^0.16.0",
+    "babel-eslint": "^6.1.2",
+    "standard": "^8.0.0"
+  },
+  "dependencies": {
+    "http-hash": "^2.0.0",
+    "micro": "^6.0.1"
+  }
+}
