@@ -1,5 +1,6 @@
 'use strict'
 import uuid from 'uuid-base62'
+
 export default {
   getUser () {
     return {
@@ -37,5 +38,40 @@ export default {
       this.getImage(),
       this.getImage()
     ]
+  },
+  getContrib () {
+    return {
+      publicId: '6QjLPtk8EYHsb0G9FIqftU',
+      id: 'e0de1420-01ba-4e19-91c6-00a76ba0668a',
+      title: 'Una contrib',
+      dateAdded: new Date(),
+      user: {
+        userId: '6QjLPtk8EYHsb0G9FIqftU',
+        username: 'roberto',
+        title: 'Esparandaculo',
+        avatar: 'pepe.jpg'
+      },
+      tags: ['#love', '#data'],
+      data: {
+        type: 'message',
+        info: 'esta es mi contribucuon',
+        image: 'noTieneImage.png'
+      },
+      messages: [
+        {
+          date: new Date(),
+          message: 'hola mundo',
+          user: {
+            username: 'titi',
+            avatar: 'nono.png'
+          }
+        }
+      ],
+      rate: ['pepe', 'conan'],
+      dev: {
+        message: null,
+        approval: false
+      }
+    }
   }
 }
