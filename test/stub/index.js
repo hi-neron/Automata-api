@@ -113,218 +113,38 @@ export default class Database {
     contrib.data = contribution
     return Promise.resolve(contrib)
   }
-/*
-
-  // Contribs functions
 
   deleteContrib (contributionId, username, cb) {
-    if (!this.connected) {
-      return Promise.reject(new Error('not connected'))
+    let res = {
+      message: 'deleted successfully',
+      status: 200,
+      publicId: contributionId
     }
-
-    let db = this.db
-    let connection = this.connection
-
-    let getUser = this.getUser.bind(this)
-    let getContribution = this.getContrib.bind(this)
-
-    let tasks = co.wrap(function * () {
-      let conn = yield connection
-      let userDb = yield getUser(username)
-
-      if (!userDb) {
-        return Promise.reject(new Error('user not found'))
-      }
-
-      // busca la contribucion
-      let contribDb = yield getContribution(contributionId)
-      if (!contribDb) {
-        return Promise.reject(new Error('contribution not found'))
-      }
-
-      // Debe ser el dueño de la contribucion para poder eliminarla
-      if (contribDb.user.username !== userDb.username) {
-        return Promise.reject(new Error('You are not authorized'))
-      }
-
-      // las contribuciones aprobadas no se  pueden eliminar
-      if (contribDb.dev.approval) {
-        return Promise.reject(new Error('Contributions aprovated can\'t be deleted'))
-      }
-
-      let id = contribDb.id
-
-      let response = yield r.db(db).table('contributions').get(id).delete().run(conn)
-
-      if (!response.deleted) {
-        return Promise.reject(new Error(`Contribution ${contributionId} not found`))
-      }
-
-      let publicId = contribDb.publicId
-
-      let res = {
-        code: 200,
-        message: 'deleted successfully',
-        status: 'ok',
-        publicId: publicId
-      }
-
-      return Promise.resolve(res)
-    })
-    return Promise.resolve(tasks()).asCallback(cb)
+    return Promise.resolve(res)
   }
 
   rateContrib (contributionId, scoringUsername, cb) {
-    if (!this.connected) {
-      return Promise.reject(new Error('not connected'))
+    let rate = ['pepe']
+    let res = {
+      status: 200,
+      rate: rate,
+      message: 'ok'
     }
-
-    let db = this.db
-    let connection = this.connection
-
-    if (!scoringUsername) {
-      return Promise.reject(new Error('Invalid new user')).asCallback(cb)
-    }
-
-    if (!contributionId) {
-      return Promise.reject(new Error('Invalid new user')).asCallback(cb)
-    }
-
-    let getUser = this.getUser.bind(this)
-    let getContribution = this.getContrib.bind(this)
-
-    let tasks = co.wrap(function * () {
-      let conn = yield connection
-
-      // se necesita saber si el usuario existe
-      let userDb = yield getUser(scoringUsername)
-
-      // devuelve un error si no
-      if (!userDb) {
-        return Promise.reject(new Error('user not found'))
-      }
-
-      // Se necesita buscar la contribucion
-      let dbContrib = yield getContribution(contributionId)
-
-      // devuelve un error si no existe
-      if (!dbContrib) {
-        return Promise.reject(new Error('contribution not found'))
-      }
-
-      let usersAgree = dbContrib.rate
-
-      // se busca si el usuario ya esta en la lista de rates de la contribucion
-      if (usersAgree.includes(userDb.username)) {
-        // si esta, lo elimina
-        usersAgree = _.remove(usersAgree, (n) => {
-          return n !== userDb.username
-        })
-      } else {
-        // si no esta lo agrega
-        usersAgree.push(userDb.username)
-      }
-
-      // se debe actualizar en la bd
-      yield r.db(db).table('contributions').get(dbContrib.id).update({
-        rate: usersAgree
-      }).run(conn)
-
-      let dbContribActualized = yield getContribution(contributionId)
-
-      // se debe construir la respuesta
-      let rate = dbContribActualized.rate.length
-
-      let res = {
-        status: 200,
-        rate: rate,
-        message: 'ok'
-      }
-
-      // se da una respuesta
-      return Promise.resolve(res)
-    })
-
-    return Promise.resolve(tasks()).asCallback(cb)
+    return Promise.resolve(res)
   }
 
   editContrib (contributionId, username, changes, cb) {
-    if (!this.connected) {
-      return Promise.reject(new Error('not connected'))
+    let res = {
+      status: 200,
+      changes: changes
     }
 
-    let db = this.db
-    let connection = this.connection
-
-    if (!username) {
-      return Promise.reject(new Error('Invalid new user')).asCallback(cb)
-    }
-
-    if (!contributionId) {
-      return Promise.reject(new Error('Invalid new user')).asCallback(cb)
-    }
-
-    // se asegura de que se pueda hacer algun cambio antes de llamar a la bd
-    const ChangesProps = ['type', 'info', 'image']
-    let count = 0
-
-    for (var prop in changes) {
-      if (_.indexOf(ChangesProps, prop) >= 0) count++
-    }
-
-    if (count === 0) {
-      return Promise.reject(new Error('invalid changes')).asCallback(cb)
-    }
-
-    let getUser = this.getUser.bind(this)
-    let getContribution = this.getContrib.bind(this)
-
-    let tasks = co.wrap(function * () {
-      let conn = yield connection
-
-      // se necesita saber si el usuario existe
-      let dbUser = yield getUser(username)
-
-      // devuelve un error si no existe
-      if (!dbUser) {
-        return Promise.reject(new Error('user not found'))
-      }
-
-      // Se necesita buscar la contribucion
-      let dbContrib = yield getContribution(contributionId)
-
-      // devuelve un error si no existe
-      if (!dbContrib) {
-        return Promise.reject(new Error('contribution not found'))
-      }
-
-      if (changes.type === '') delete changes.type
-      if (changes.info === '') delete changes.info
-      if (changes.image === '') delete changes.image
-
-      // se hacen los cambios
-      changes.type = changes.type || dbContrib.data.type
-      changes.info = changes.info || dbContrib.data.info
-      changes.image = changes.image || dbContrib.data.image
-
-      // se debe actualizar en la bd
-      yield r.db(db).table('contributions').get(dbContrib.id).update({
-        data: changes
-      }).run(conn)
-
-      let dbContribActualized = yield getContribution(contributionId)
-
-      let res = {
-        status: 200,
-        changes: dbContribActualized.data
-      }
-
-      // se da una respuesta
-      return Promise.resolve(res)
-    })
-
-    return Promise.resolve(tasks()).asCallback(cb)
+    // se da una respuesta
+    return Promise.resolve(res)
   }
+
+  /*
+  // Contribs functions
 
   addContribMessage (contributionId, username, data, cb) {
     if (!this.connected) {

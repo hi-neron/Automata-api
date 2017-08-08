@@ -46,6 +46,7 @@ test('GET contribs', async t => {
   t.is(response.body.contributions.length, 3, 'size 3')
 })
 
+// url: /
 test('POST / create a contrib', async t => {
   let url = t.context.url
   let contrib = fixtures.getContrib()
@@ -72,38 +73,22 @@ test('POST / create a contrib', async t => {
   t.is(response.body.user.username, contrib.user.username)
 })
 
-/*
-test('GET / all images', async t => {
+// url: /
+test('DELETE delete a contrib', async t => {
   let url = t.context.url
-  let images = fixtures.getImages()
+  let contrib = fixtures.getContrib()
 
-  let options = {
-    method: 'GET',
-    url: url,
-    json: true,
-    resolveWithFullResponse: true
-  }
+  let token = await utils.signToken({ username: contrib.user.username }, config.secret)
 
-  let imagesDb = await request(options)
-  t.deepEqual(imagesDb.body.length, images.length)
-})
-
-test('DELETE /:image delete one image', async t => {
-  let url = t.context.url
-  let image = fixtures.getImage()
-  let user = fixtures.getUser()
-
-  image.userId = user.publicId
-
-  let token = await utils.signToken({ userId: user.publicId }, config.secret)
+  let contribId = contrib.publicId
 
   let options = {
     method: 'DELETE',
-    url: `${url}/`,
+    url: `${url}`,
     json: true,
     body: {
-      userId: user.publicId,
-      imageId: image.publicId
+      username: contrib.user.username,
+      contribId: contribId
     },
     headers: {
       'Authorization': `Bearer ${token}`
@@ -112,32 +97,94 @@ test('DELETE /:image delete one image', async t => {
   }
 
   let response = await request(options)
-  t.is(response.body.status, 'ok')
-  t.is(response.body.code, 204)
+  t.deepEqual(response.body.publicId, contribId)
+  t.is(response.body.status, 200, 'status must be 200')
 })
 
-test('GET /:username/images', async t => {
+// url: /rate
+test('POST /rate rate a contrib', async t => {
+  /*
+    {
+      contribId,
+      username
+    }
+  */
+
   let url = t.context.url
-  let images = fixtures.getImages()
+  let contrib = fixtures.getContrib()
+  let username = contrib.user.username
+  let contribId = contrib.publicId
+
+  let token = await utils.signToken({ username: username }, config.secret)
+
+  let data = {
+    contribId: contribId,
+    username: username
+  }
 
   let options = {
-    method: 'GET',
-    url: `${url}/images/${images[0].username}`,
+    method: 'POST',
+    url: `${url}/rate`,
     json: true,
+    body: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
     resolveWithFullResponse: true
   }
 
-  let imagesUserDb = await request(options)
-  console.log(imagesUserDb.body)
-  t.deepEqual(imagesUserDb.body[0].username, images[0].username)
+  let response = await request(options)
+  t.is(response.body.rate.length, 1)
 })
 
-*/
+// url: /rate
+test('POST /edit edit a contrib', async t => {
+  /*
+    {
+      type,
+      info,
+      image
+    }
+  */
 
-test.todo('POST create a contrib')
-test.todo('DELETE a contrib')
-test.todo('POST rate a contrib')
-test.todo('POST edit a contrib')
+  let url = t.context.url
+  let contrib = fixtures.getContrib()
+
+  // los identificadores de la bd
+  let username = contrib.user.username
+  let contribId = contrib.publicId
+
+  let token = await utils.signToken({ username: username }, config.secret)
+
+  let info = {
+    type: 'Photo',
+    info: 'This is the contrib messaje',
+    image: 'pgot.png'
+  }
+
+  let data = {
+    contribId: contribId,
+    username: username,
+    info: info
+  }
+
+  let options = {
+    method: 'POST',
+    url: `${url}/edit`,
+    json: true,
+    body: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.deepEqual(response.body.changes, info, 'status should be 200')
+})
+
+// next tests will make with a realtime module
+test.todo('POST add dev response contrib')
 test.todo('POST add message to contrib')
 test.todo('POST delete message contrib')
-test.todo('POST add dev response contrib')

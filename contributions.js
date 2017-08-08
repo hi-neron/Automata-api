@@ -16,13 +16,51 @@ if (dev === 'test') {
 
 const hash = httpHash()
 
-// obtener una contribucion
-hash.set('GET /:id', async function getOneContrib (req, res, params) {
-  let id = params.id
+// edit a contrib
+hash.set('POST /edit', async function editContrib (req, res, params) {
+  let data = await json(req)
+  let contribId = data.contribId
+  let username = data.username
+  let changes = data.info
+
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.username !== username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
+
   await db.connect()
-  let contrib = await db.getContrib(id)
+  let created = await db.editContrib(contribId, username, changes)
   await db.disconnect()
-  send(res, 200, contrib)
+
+  send(res, 201, created)
+})
+
+// rate a contrib
+hash.set('POST /rate', async function rateContrib (req, res, params) {
+  let data = await json(req)
+  let contribId = data.contribId
+  let username = data.username
+
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.username !== username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
+
+  await db.connect()
+  let created = await db.rateContrib(contribId, username)
+  await db.disconnect()
+
+  send(res, 201, created)
 })
 
 // obtener las ultimas contribuciones
@@ -34,6 +72,16 @@ hash.set('GET /last/:group', async function getTenContribs (req, res, params) {
   send(res, 200, contribs)
 })
 
+// obtener una contribucion
+hash.set('GET /:id', async function getOneContrib (req, res, params) {
+  let id = params.id
+  await db.connect()
+  let contrib = await db.getContrib(id)
+  await db.disconnect()
+  send(res, 200, contrib)
+})
+
+// crea una contribuciuon
 hash.set('POST /', async function createContrib (req, res, params) {
   let contrib = await json(req)
 
@@ -57,42 +105,29 @@ hash.set('POST /', async function createContrib (req, res, params) {
   send(res, 201, created)
 })
 
-// hash.set('GET /:imageId', async function getOneImage (req, res, params) {
-//   let imageId = params.imageId
-//   await db.connect()
-//   let image = await db.getPicture(imageId)
-//   await db.disconnect()
+// elimina una contribucion
+hash.set('DELETE /', async function deleteContrib (req, res, params) {
+  let body = await json(req)
+  let contribId = body.contribId
+  let username = body.username
 
-//   send(res, 200, image)
-// })
+  // revisa si el token concuerda
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.username !== username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
 
-// hash.set('GET /', async function getAllImages (req, res, params) {
-//   await db.connect()
-//   let images = await db.getAllPictures()
-//   await db.disconnect()
+  await db.connect()
+  let response = await db.deleteContrib(contribId, username)
+  await db.disconnect()
 
-//   send(res, 200, images)
-// })
-
-// hash.set('DELETE /', async function deleteImage (req, res, params) {
-//   let image = json(req)
-
-//   try {
-//     let token = await utils.extractToken(req)
-//     let encoded = await utils.verifyToken(token, config.secret)
-//     if (encoded && encoded.userId !== image.userId) {
-//       throw new Error('invalid token')
-//     }
-//   } catch (e) {
-//     return send(res, 401, {error: 'invalid token'})
-//   }
-
-//   await db.connect()
-//   let response = await db.deletePicture(image.imageId)
-//   await db.disconnect()
-
-//   send(res, 201, response)
-// })
+  send(res, 201, response)
+})
 
 export default async function (req, res) {
   let { method, url } = req
