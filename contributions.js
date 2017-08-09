@@ -63,6 +63,30 @@ hash.set('POST /rate', async function rateContrib (req, res, params) {
   send(res, 201, created)
 })
 
+// add devResponse
+hash.set('POST /devRes', async function rateContrib (req, res, params) {
+  let data = await json(req)
+  let contribId = data.contribId
+  let username = data.username
+  let devRes = data.devRes
+
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.username !== username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
+
+  await db.connect()
+  let resAdded = await db.devRes(contribId, username, devRes)
+  await db.disconnect()
+
+  send(res, 201, resAdded)
+})
+
 // obtener las ultimas contribuciones
 hash.set('GET /last/:group', async function getTenContribs (req, res, params) {
   let group = params.group

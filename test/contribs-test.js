@@ -184,7 +184,45 @@ test('POST /edit edit a contrib', async t => {
   t.deepEqual(response.body.changes, info, 'status should be 200')
 })
 
+test('POST add dev response contrib', async t => {
+  let url = t.context.url
+  let contrib = fixtures.getContrib()
+
+  // los identificadores de la bd
+  let username = contrib.user.username
+  let contribId = contrib.publicId
+
+  let token = await utils.signToken({ username: username }, config.secret)
+
+  let devResponse = {
+    message: 'Esto puede funcionar',
+    approval: true
+  }
+
+  let data = {
+    contribId: contribId,
+    username: username,
+    devRes: devResponse
+  }
+
+  let options = {
+    method: 'POST',
+    url: `${url}/devRes`,
+    json: true,
+    body: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  console.log(response)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.is(response.body.message, devResponse.message, 'should be the same message')
+  t.is(response.body.approval, devResponse.approval, 'should be the same response')
+})
+
 // next tests will make with a realtime module
-test.todo('POST add dev response contrib')
 test.todo('POST add message to contrib')
 test.todo('POST delete message contrib')
