@@ -18,9 +18,11 @@ const hash = HttpHash()
 
 hash.set('POST /', async function authenticate (req, res, params) {
   let keys = await json(req)
+  console.log(keys)
   await db.connect()
   let auth = await db.authenticate(keys.username, keys.password)
   await db.disconnect()
+  console.log(auth)
 
   if (!auth) {
     return send(res, 401, {'error': 'User or password invalid'})
@@ -29,6 +31,7 @@ hash.set('POST /', async function authenticate (req, res, params) {
   let token = await utils.signToken({
     userId: keys.username
   }, config.secret)
+  console.log(token)
 
   send(res, 200, token)
 })

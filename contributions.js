@@ -108,11 +108,13 @@ hash.set('GET /:id', async function getOneContrib (req, res, params) {
 // crea una contribuciuon
 hash.set('POST /', async function createContrib (req, res, params) {
   let contrib = await json(req)
+  console.log(contrib)
 
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
-    if (encoded && encoded.username !== contrib.username) {
+    console.log(encoded, token)
+    if (encoded && encoded.userId !== contrib.username) {
       throw new Error('invalid token')
     }
   } catch (e) {
