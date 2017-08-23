@@ -26,7 +26,7 @@ hash.set('POST /edit', async function editContrib (req, res, params) {
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
-    if (encoded && encoded.username !== username) {
+    if (encoded && encoded.userId !== username) {
       throw new Error('invalid token')
     }
   } catch (e) {
@@ -46,14 +46,16 @@ hash.set('POST /rate', async function rateContrib (req, res, params) {
   let contribId = data.contribId
   let username = data.username
 
+  console.log(contribId, username)
+
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
-    if (encoded && encoded.username !== username) {
+    if (encoded && encoded.userId !== username) {
       throw new Error('invalid token')
     }
   } catch (e) {
-    return send(res, 401, {error: 'invalid token'})
+    return send(res, 401, {error: e})
   }
 
   await db.connect()
@@ -64,7 +66,7 @@ hash.set('POST /rate', async function rateContrib (req, res, params) {
 })
 
 // add devResponse
-hash.set('POST /devRes', async function rateContrib (req, res, params) {
+hash.set('POST /devRes', async function devResponse (req, res, params) {
   let data = await json(req)
   let contribId = data.contribId
   let username = data.username
@@ -73,7 +75,7 @@ hash.set('POST /devRes', async function rateContrib (req, res, params) {
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
-    if (encoded && encoded.username !== username) {
+    if (encoded && encoded.userId !== username) {
       throw new Error('invalid token')
     }
   } catch (e) {
@@ -141,7 +143,7 @@ hash.set('DELETE /', async function deleteContrib (req, res, params) {
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
-    if (encoded && encoded.username !== username) {
+    if (encoded && encoded.userId !== username) {
       throw new Error('invalid token')
     }
   } catch (e) {
