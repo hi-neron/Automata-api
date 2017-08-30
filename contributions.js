@@ -46,8 +46,6 @@ hash.set('POST /rate', async function rateContrib (req, res, params) {
   let contribId = data.contribId
   let username = data.username
 
-  console.log(contribId, username)
-
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
@@ -66,7 +64,7 @@ hash.set('POST /rate', async function rateContrib (req, res, params) {
 })
 
 // add devResponse
-hash.set('POST /devRes', async function devResponse (req, res, params) {
+hash.set('POST /devres', async function devResponse (req, res, params) {
   let data = await json(req)
   let contribId = data.contribId
   let username = data.username
@@ -85,6 +83,7 @@ hash.set('POST /devRes', async function devResponse (req, res, params) {
   await db.connect()
   let resAdded = await db.devRes(contribId, username, devRes)
   await db.disconnect()
+  console.log(resAdded)
 
   send(res, 201, resAdded)
 })
@@ -110,12 +109,10 @@ hash.set('GET /:id', async function getOneContrib (req, res, params) {
 // crea una contribuciuon
 hash.set('POST /', async function createContrib (req, res, params) {
   let contrib = await json(req)
-  console.log(contrib)
 
   try {
     let token = await utils.extractToken(req)
     let encoded = await utils.verifyToken(token, config.secret)
-    console.log(encoded, token)
     if (encoded && encoded.userId !== contrib.username) {
       throw new Error('invalid token')
     }
