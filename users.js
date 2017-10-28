@@ -103,7 +103,7 @@ hash.set('GET /:username', async function getUser (req, res, params) {
 
 hash.set('POST /', async function createUser (req, res, params) {
   let user = await json(req)
-    console.log(user)
+  console.log(user)
 
   if (!user.facebook && !user.password) {
     send(res, 500, {error: 'user need password'})

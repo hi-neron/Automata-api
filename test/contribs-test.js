@@ -51,7 +51,7 @@ test('POST / create a contrib', async t => {
   let url = t.context.url
   let contrib = fixtures.getContrib()
 
-  let token = await utils.signToken({ username: contrib.user.username }, config.secret)
+  let token = await utils.signToken({ userId: contrib.user.username }, config.secret)
 
   let toSend = contrib.data
   toSend.username = contrib.user.username
@@ -78,7 +78,7 @@ test('DELETE delete a contrib', async t => {
   let url = t.context.url
   let contrib = fixtures.getContrib()
 
-  let token = await utils.signToken({ username: contrib.user.username }, config.secret)
+  let token = await utils.signToken({ userId: contrib.user.username }, config.secret)
 
   let contribId = contrib.publicId
 
@@ -115,7 +115,7 @@ test('POST /rate rate a contrib', async t => {
   let username = contrib.user.username
   let contribId = contrib.publicId
 
-  let token = await utils.signToken({ username: username }, config.secret)
+  let token = await utils.signToken({ userId: username }, config.secret)
 
   let data = {
     contribId: contribId,
@@ -154,7 +154,7 @@ test('POST /edit edit a contrib', async t => {
   let username = contrib.user.username
   let contribId = contrib.publicId
 
-  let token = await utils.signToken({ username: username }, config.secret)
+  let token = await utils.signToken({ userId: username }, config.secret)
 
   let info = {
     type: 'Photo',
@@ -192,7 +192,7 @@ test('POST add dev response contrib', async t => {
   let username = contrib.user.username
   let contribId = contrib.publicId
 
-  let token = await utils.signToken({ username: username }, config.secret)
+  let token = await utils.signToken({ userId: username }, config.secret)
 
   let devResponse = {
     message: 'Esto puede funcionar',
@@ -207,7 +207,7 @@ test('POST add dev response contrib', async t => {
 
   let options = {
     method: 'POST',
-    url: `${url}/devRes`,
+    url: `${url}/devres`,
     json: true,
     body: data,
     headers: {
@@ -217,12 +217,149 @@ test('POST add dev response contrib', async t => {
   }
 
   let response = await request(options)
-  console.log(response)
   t.is(response.body.status, 200, 'status should be 200')
   t.is(response.body.message, devResponse.message, 'should be the same message')
   t.is(response.body.approval, devResponse.approval, 'should be the same response')
 })
 
+// Man Of Month
+// url /setmom
+test.skip('POST set mom', async t => {
+  let url = t.context.url
+  let contrib = fixtures.getContrib()
+  let mom = fixtures.getMom()
+
+  // los identificadores de la bd
+  let username = contrib.user.username
+
+  let token = await utils.signToken({ userId: username }, config.secret)
+
+  let data = {
+    username: username
+  }
+
+  let options = {
+    method: 'POST',
+    url: `${url}/setmom/pedro`,
+    json: true,
+    body: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.deepEqual(response.body.mom, mom, 'should be the same mom')
+})
+
+// url /getmom
+test.skip('GET get mom', async t => {
+  let url = t.context.url
+  let mom = fixtures.getMom()
+
+  let options = {
+    method: 'GET',
+    url: `${url}/getmom`,
+    json: true,
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  console.log(response.body)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.deepEqual(response.body.mom, mom, 'should be the same mom')
+})
+
+// url /getbytag
+test.skip('GET get contribs by tag ', async t => {
+  let url = t.context.url
+  let contrib = fixtures.getContrib()
+
+  let tag = contrib.tags[0]
+
+  let options = {
+    method: 'GET',
+    url: `${url}/getbytag/${tag}`,
+    json: true,
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.deepEqual(response.body.tags[0], tag, 'should be the same mom')
+})
+
 // next tests will make with a realtime module
-test.todo('POST add message to contrib')
-test.todo('POST delete message contrib')
+test.skip('POST add message to contrib', async t => {
+  let url = t.context.url
+  let contrib = fixtures.getContrib()
+
+  // los identificadores de la bd
+  let username = contrib.user.username
+  let contribId = contrib.publicId
+
+  let token = await utils.signToken({ userId: username }, config.secret)
+
+  let content = 'hola este es mi mensaje'
+
+  let data = {
+    contribId: contribId,
+    username: username,
+    content: content
+  }
+
+  let options = {
+    method: 'POST',
+    url: `${url}/addmessage`,
+    json: true,
+    body: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.is(response.body.message.content, data.message, 'should be the same message')
+  t.is(response.body.message.user.username, data.username, 'should be the same response')
+  t.is(response.body.message.id, data.contribId, 'should be the same response')
+})
+
+// delete messages
+test.skip('POST delete message contrib', async t => {
+  let url = t.context.url
+  let contrib = fixtures.getContrib()
+
+  // los identificadores de la bd
+  let username = contrib.user.username
+  let contribId = contrib.publicId
+
+  let token = await utils.signToken({ userId: username }, config.secret)
+  let messageId = '123245'
+
+  let data = {
+    contribId: contribId,
+    username: username,
+    messageId: messageId
+  }
+
+  let options = {
+    method: 'POST',
+    url: `${url}/delmessage`,
+    json: true,
+    body: data,
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    resolveWithFullResponse: true
+  }
+
+  let response = await request(options)
+  t.is(response.body.status, 200, 'status should be 200')
+  t.is(response.body.message.content, data.message, 'should be the same message')
+  t.is(response.body.message.user.username, data.username, 'should be the same response')
+  t.is(response.body.message.id, data.contribId, 'should be the same response')
+})

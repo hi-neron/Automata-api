@@ -73,5 +73,16 @@ export default {
         approval: false
       }
     }
+  },
+  getMom () {
+    return {
+      avatar: '/img/default-bete.png',
+      badges: 'all',
+      masteries: 'Les mains de la bête',
+      level: 'all',
+      username: 'Lucifer',
+      title: 'le bête',
+      byAdmin: 'Chuck Norris'
+    }
   }
 }

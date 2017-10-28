@@ -152,6 +152,61 @@ export default class Database {
     return Promise.resolve(res)
   }
 
+  addContribMessage (contributionId, user, content, cb) {
+    let message = {}
+
+    message.content = content
+    message.date = new Date()
+    message.id = 'efhionerfn23oefn'
+    message.contribId = contributionId
+    message.user = {
+      username: user,
+      publicId: 12341241,
+      image: 'fefrg.png',
+      admin: false
+    }
+
+    let res = {
+      status: 200,
+      message: message
+    }
+
+    return Promise.resolve(res)
+  }
+
+  delContribMessage (contributionId, user, messageId) {
+    let res = {
+      status: 200,
+      message: 'hi hi'
+    }
+
+    return Promise.resolve(res)
+  }
+
+  setManOfMonth (useradmin, usermom) {
+    let response = {
+      status: 200,
+      mom: fixtures.getMom()
+    }
+    return Promise.resolve(response)
+  }
+
+  getManOfMonth () {
+    let response = {
+      status: 200,
+      mom: fixtures.getMom()
+    }
+    return Promise.resolve(response)
+  }
+
+  getContribsByTag (tag) {
+    let response = {
+      status: 200,
+      contribs: fixtures.getContrib
+    }
+    return Promise.resolve(response)
+  }
+
   /*
 
   */

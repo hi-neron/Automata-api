@@ -16,6 +16,40 @@ if (dev === 'test') {
 
 const hash = httpHash()
 
+// MAN OF MONTH
+
+// set mom
+hash.set('POST /setmom/:username', async function setManOfMonth (req, res, params) {
+  let data = await json(req)
+  let username = data.username
+  let usermom = params.username
+
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.userId !== username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
+
+  await db.connect()
+  let created = await db.setManOfMonth(username, usermom)
+  await db.disconnect()
+
+  send(res, 201, created)
+})
+
+// get mom
+hash.set('GET /getmom', async function getManOfMonth (req, res, params) {
+  await db.connect()
+  let mom = await db.getManOfMonth()
+  await db.disconnect()
+
+  send(res, 201, mom)
+})
+
 // edit a contrib
 hash.set('POST /edit', async function editContrib (req, res, params) {
   let data = await json(req)
@@ -88,11 +122,72 @@ hash.set('POST /devres', async function devResponse (req, res, params) {
   send(res, 201, resAdded)
 })
 
+// delete new contrib message
+hash.set('POST /delmessage', async function deleteContribMessage (req, res, params) {
+  let contrib = await json(req)
+
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.userId !== contrib.username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
+
+  let contribId = contrib.contribId
+  let username = contrib.username
+  let messageId = contrib.messageId
+
+  await db.connect()
+  let delMessage = await db.delContribMessage(contribId, username, messageId)
+  await db.disconnect()
+
+  send(res, 201, delMessage)
+})
+
+// add new contrib message
+hash.set('POST /addmessage', async function addContribMessage (req, res, params) {
+  let contrib = await json(req)
+
+  try {
+    let token = await utils.extractToken(req)
+    let encoded = await utils.verifyToken(token, config.secret)
+    if (encoded && encoded.userId !== contrib.username) {
+      throw new Error('invalid token')
+    }
+  } catch (e) {
+    return send(res, 401, {error: 'invalid token'})
+  }
+
+  let contribId = contrib.contribId
+  let username = contrib.username
+  let content = contrib.content
+
+  await db.connect()
+  let newMessage = await db.addContribMessage(contribId, username, content)
+  await db.disconnect()
+
+  send(res, 201, newMessage)
+})
+
 // obtener las ultimas contribuciones
 hash.set('GET /last/:group', async function getTenContribs (req, res, params) {
   let group = params.group
   await db.connect()
   let contribs = await db.getTenContribs(group)
+  await db.disconnect()
+  console.log(contribs.contributions[0])
+  send(res, 200, contribs)
+})
+
+// obtener contribuciones por tag
+hash.set('GET /getbytag/:tag', async function getOneContrib (req, res, params) {
+  let tag = params.tag
+  console.log(tag)
+  await db.connect()
+  let contribs = await db.getContribsByTag(tag)
   await db.disconnect()
   send(res, 200, contribs)
 })
@@ -153,6 +248,8 @@ hash.set('DELETE /', async function deleteContrib (req, res, params) {
 
   send(res, 201, response)
 })
+
+// delete contrib message
 
 export default async function (req, res) {
   let { method, url } = req
